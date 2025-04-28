@@ -38,17 +38,18 @@ body {
 #header img {
     height: 35px; /* Logo yüksekliği */
     width: auto; /* Oranı koru */
+    object-fit: contain; /* Resim bozulmasın */
 }
 #logo-left {
-   /* Tiktak logosu için ek stil gerekirse */
+   margin-right: 10px; /* Başlıkla arasında boşluk */
 }
 #logo-right {
-   /* Kyrosil logosu için ek stil gerekirse */
+   margin-left: 10px; /* Başlıkla arasında boşluk */
    opacity: 0.9;
 }
 
 #header h1 {
-    margin: 0 10px; /* Logolarla arasına boşluk */
+    margin: 0; /* Yan boşlukları kaldır, flex halleder */
     color: #e63946; /* Daha canlı bir kırmızı */
     font-size: 1.6em; /* Boyut ayarlandı */
     font-weight: 700; /* Kalın */
@@ -76,14 +77,12 @@ body {
 /* === Oyun Alanı (Canvas) === */
 #gameCanvas {
     border: 1px solid #ccc; /* Daha ince kenarlık */
-    background-color: #f8f9fa; /* Çok açık gri yol zemini */
+    background-color: #5c5c5c; /* Yol rengi (JS'de yol çizilecek) */
     display: block;
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
     border-radius: 5px; /* Hafif yuvarlak köşe */
-     /* Yol çizgileri için belki gradient arka plan? */
-    /* background-image: linear-gradient(to bottom, #f8f9fa 95%, #e9ecef 100%); */
 }
 
 /* === Mobil Kontrol Butonları (Modernleştirilmiş) === */
@@ -139,8 +138,9 @@ body {
     opacity: 0; /* Başlangıçta görünmez */
     visibility: hidden; /* Erişilemez */
     transition: opacity 0.3s ease, visibility 0.3s ease; /* Yumuşak geçiş */
+    box-sizing: border-box; /* Padding/border hesaba katılsın */
 }
-.overlay.visible { /* JS ile eklenecek class */
+.overlay.visible {
     opacity: 1;
     visibility: visible;
 }
@@ -154,6 +154,7 @@ body {
     max-width: 90%;
     max-height: 90%; /* Ekranı kaplamasın */
     overflow-y: auto; /* İçerik sığmazsa kaydır */
+    box-sizing: border-box;
 }
 
 .overlay-content h2 {
@@ -189,14 +190,14 @@ body {
 }
 #startScreen #rewardList li {
     margin-bottom: 5px;
-    padding-left: 15px;
+    padding-left: 20px; /* İkon için yer aç */
     position: relative;
 }
-#startScreen #rewardList li::before { /* Liste başına ikon */
+#startScreen #rewardList li::before {
     content: '🏆';
     position: absolute;
     left: 0;
-    top: 0px;
+    top: 1px; /* Dikey hizalama */
     font-size: 0.9em;
 }
 #start-btn {
@@ -228,6 +229,7 @@ body {
     color: #2a9d8f; /* Turkuaz/Yeşil tonu */
     font-weight: bold;
     margin-bottom: 15px;
+    line-height: 1.4; /* Uzun mesajlar için */
 }
 #emailInstruction {
     font-size: 0.9em !important;
@@ -265,6 +267,7 @@ body {
     font-weight: bold;
     text-align: center;
     font-size: 0.9em;
+    display: none; /* Başlangıçta gizli */
 }
 
 /* Konfeti Stilleri */
@@ -275,48 +278,51 @@ body {
 .confetti {
     position: absolute; width: 8px; height: 15px; opacity: 0.9;
     border-radius: 2px; animation: fall 3s linear infinite;
-    /* Renkler JS ile atanacak */
 }
 @keyframes fall {
-    to { transform: translateY(100vh) rotate(720deg); opacity: 0; } /* Daha fazla dönüş */
+    to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 
 /* === Mobil Cihaz Özel Stilleri === */
 @media (max-width: 768px) or (pointer: coarse) {
-    body { /* Mobilde tam ekran hissi */
-        align-items: flex-start; /* Yukarıdan başla */
-        padding-top: 10px; /* Üst boşluk */
+    body {
+        align-items: flex-start;
+        padding-top: 5px; /* Mobilde üst boşluğu azalt */
     }
     #game-container {
-        width: 95%; /* Ekranı daha iyi doldur */
-        padding: 15px; /* İç boşluk */
+        width: 98%; /* Ekranı daha da doldur */
+        padding: 10px; /* İç boşluk azalt */
         border-radius: 10px;
         margin-top: 0;
     }
-    #header h1 { font-size: 1.3em; margin: 0 8px; }
-    #header img { height: 28px; }
-    #ui-container { font-size: 1em; margin-bottom: 10px; }
-    #mobile-controls { display: flex; }
-    .overlay-content { padding: 15px 20px; max-width: 90%; }
-    .overlay-content h2 { font-size: 1.5em; margin-bottom: 15px;}
-    #startScreen .instructions { font-size: 0.9em; }
-    #startScreen #rewardList { font-size: 0.9em;}
-    #start-btn { font-size: 1.1em; padding: 10px 25px;}
-    #finalScore { font-size: 1.4em; }
-    #rewardMessage { font-size: 1.1em; }
-    #emailInstruction { font-size: 0.85em !important; }
+    #header { padding-bottom: 8px; margin-bottom: 10px;}
+    #header h1 { font-size: 1.2em; margin: 0 5px; } /* Mobilde başlığı küçült */
+    #header img { height: 25px; }
+    #ui-container { font-size: 0.9em; margin-bottom: 10px; }
+    #mobile-controls { display: flex; margin-top: 10px;}
+    #mobile-controls button { padding: 10px 5px; font-size: 1em;}
+
+    .overlay-content { padding: 15px; max-width: 92%; }
+    .overlay-content h2 { font-size: 1.4em; margin-bottom: 15px;}
+    #startScreen .instructions { font-size: 0.85em; }
+    #startScreen #rewardList { font-size: 0.85em;}
+    #start-btn { font-size: 1em; padding: 10px 25px;}
+    #finalScore { font-size: 1.3em; }
+    #rewardMessage { font-size: 1.05em; }
+    #emailInstruction { font-size: 0.8em !important; }
     #restart-btn { font-size: 1em; padding: 10px 20px; }
 }
 
 @media (max-width: 480px) {
-    #header h1 { font-size: 1.1em; }
-    #header img { height: 25px; }
-    #ui-container { font-size: 0.9em; }
-    #mobile-controls button { font-size: 1em; padding: 10px 5px;}
-    .overlay-content { padding: 15px; }
-    .overlay-content h2 { font-size: 1.3em; }
-    #finalScore { font-size: 1.2em; }
-    #rewardMessage { font-size: 1em; }
-    #emailInstruction { font-size: 0.8em !important; }
-    #start-btn, #restart-btn { font-size: 1em; padding: 10px 18px;}
+     #header h1 { font-size: 1em; }
+     #header img { height: 22px; }
+     #ui-container { font-size: 0.8em; }
+     #mobile-controls button { font-size: 0.9em;}
+     .overlay-content { padding: 12px; }
+     .overlay-content h2 { font-size: 1.2em; }
+     #startScreen .instructions { font-size: 0.8em; }
+     #startScreen #rewardList { font-size: 0.8em;}
+     #start-btn, #restart-btn { font-size: 0.9em; padding: 9px 18px;}
+     #finalScore { font-size: 1.1em; }
+     #rewardMessage { font-size: 0.95em; }
 }
