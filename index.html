@@ -3,30 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Tiktak Kaçış Oyunu</title>
+    <title>Kyrosil Tiktak Kaçış</title> {/* İsim Güncellendi */}
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"> {/* Modern font */}
 </head>
 <body>
     <div id="game-container">
-        <h1>Tiktak Kaçış</h1>
+        <div id="header">
+            <img id="logo-left" src="./indir (1).png" alt="Tiktak Logo"> {/* Sol Logo */}
+            <h1>Kyrosil Tiktak Kaçış</h1> {/* İsim Güncellendi */}
+            <img id="logo-right" src="./indir.png" alt="Kyrosil Logo"> {/* Sağ Logo */}
+        </div>
         <div id="ui-container">
             <div id="score">Skor: 0</div>
             <div id="lives">Can: ❤️❤️❤️</div>
         </div>
         <canvas id="gameCanvas"></canvas>
         <div id="mobile-controls">
-            <button id="left-btn">⬅️ SOL</button>
-            <button id="right-btn">SAĞ ➡️</button>
+            <button id="left-btn"> <span class="arrow">←</span> <span class="text">SOL</span></button> {/* Modern Buton İçeriği */}
+            <button id="right-btn"><span class="text">SAĞ</span> <span class="arrow">→</span></button> {/* Modern Buton İçeriği */}
         </div>
-        <div id="message-area"></div> </div>
+        <div id="message-area"></div>
+    </div>
+
+    <div id="startScreen" class="overlay">
+        <div class="overlay-content">
+            <h2>Kyrosil Tiktak Kaçış'a Hoş Geldiniz!</h2>
+            <img src="./indir (1).png" alt="Tiktak Araba" style="max-height: 60px; margin-bottom: 15px;">
+            <p class="instructions">
+                <strong>Nasıl Oynanır:</strong> Klavye (Ok tuşları veya A/D) veya mobil butonları kullanarak Tiktak arabanızı 3 şeritli yolda sürün. Engellere (🚗🚙🚕) çarpmadan ilerleyin. Nadiren çıkan Kyrosil logolarını (✨) toplayarak ekstra puan kazanın! 3 can hakkınız var.
+            </p>
+            <p class="instructions">
+                <strong>Puanlama:</strong> Çarpmadan geçilen her engel +1 Puan, toplanan her Kyrosil logosu +5 Puan.
+            </p>
+            <div class="rewards-info">
+                <strong>Ödüller:</strong>
+                <ul id="rewardList">
+                    {/* Ödüller JS ile buraya eklenecek */}
+                </ul>
+            </div>
+            <button id="start-btn">Oyuna Başla!</button>
+             <p style="font-size: 0.7em; color: #aaa; margin-top: 15px;">Günlük 3 oyun hakkınız bulunmaktadır.</p>
+        </div>
+    </div>
 
     <div id="gameOverScreen" class="overlay" style="display: none;">
         <div class="overlay-content">
             <h2>Oyun Bitti!</h2>
             <p id="finalScore">Skorun: 0</p>
-            <p id="rewardMessage"></p> <p id="emailInstruction" style="font-size: 0.9em; margin-top: 15px;"></p> <button id="restart-btn">Yeniden Başlat</button>
+            <p id="rewardMessage"></p>
+            <p id="emailInstruction" style="font-size: 0.9em; margin-top: 15px;"></p>
+            <button id="restart-btn">Yeniden Başlat</button>
         </div>
-        <div id="confetti-container"></div> </div>
+        <div id="confetti-container"></div>
+    </div>
 
     <script src="script.js"></script>
 </body>
