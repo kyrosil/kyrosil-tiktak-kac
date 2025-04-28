@@ -1,83 +1,86 @@
-// Oyun Alanı ve Değişkenler
+// === Oyun Alanı ve Değişkenler ===
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
 const livesElement = document.getElementById('lives');
+const startScreen = document.getElementById('startScreen');
 const gameOverScreen = document.getElementById('gameOverScreen');
 const finalScoreElement = document.getElementById('finalScore');
 const rewardMessageElement = document.getElementById('rewardMessage');
 const emailInstructionElement = document.getElementById('emailInstruction');
+const startBtn = document.getElementById('start-btn');
 const restartBtn = document.getElementById('restart-btn');
 const mobileControls = document.getElementById('mobile-controls');
 const leftBtn = document.getElementById('left-btn');
 const rightBtn = document.getElementById('right-btn');
 const confettiContainer = document.getElementById('confetti-container');
 const messageArea = document.getElementById('message-area');
+const rewardListElement = document.getElementById('rewardList'); // Ödül listesi için
 
-const REWARD_EMAIL = "tiktakkac@kyrosil.eu"; // Ödül için e-posta adresi
+const REWARD_EMAIL = "tiktakkac@kyrosil.eu";
+const PLAYER_CAR_SRC = './indir (1).png'; // Boşluk ve parantezli isim
+const BONUS_SRC = './indir.png';
 
 let canvasWidth, canvasHeight;
 
-// Oyun Ayarları
-const laneCount = 3; // 3 Şeritli yol
+// === Oyun Ayarları ===
+const laneCount = 3;
 let laneWidth;
-const playerCarWidthRatio = 0.18; // Canvas genişliğine oranla araba genişliği
-const playerCarHeightRatio = 0.1; // Araba yüksekliği
-const obstacleWidthRatio = 0.15; // Engel genişliği
-const obstacleHeightRatio = 0.08; // Engel yüksekliği
-const bonusWidthRatio = 0.12; // Bonus genişliği
-const bonusHeightRatio = 0.06; // Bonus yüksekliği
+const playerCarWidthRatio = 0.17; // Biraz daha dar olabilir
+const playerCarHeightRatio = 0.09;
+const obstacleWidthRatio = 0.15;
+const obstacleHeightRatio = 0.08;
+const bonusWidthRatio = 0.11;
+const bonusHeightRatio = 0.07;
 
 let playerCar = {
-    x: 0,
-    y: 0,
-    width: 50,
-    height: 80,
-    speed: 8,
-    lane: 1, // 0=sol, 1=orta, 2=sağ
-    image: new Image(),
-    loaded: false
+    x: 0, y: 0, width: 45, height: 70, speed: 9, lane: 1, // Hız hafif arttı
+    image: new Image(), loaded: false
 };
-// Parantez ve boşluk sorun yaratırsa diye encodeURI kullanıyoruz
-playerCar.image.src = encodeURI('./indir (1).png');
+try {
+    playerCar.image.src = encodeURI(PLAYER_CAR_SRC); // Encode URI
+} catch(e) { console.error("Araba resmi URL hatası:", e); }
 playerCar.image.onload = () => { playerCar.loaded = true; };
-playerCar.image.onerror = () => { console.error("Araba resmi yüklenemedi!"); playerCar.loaded = false; }; // Hata durumunda
+playerCar.image.onerror = () => { console.error("Araba resmi yüklenemedi! Yol:", PLAYER_CAR_SRC); playerCar.loaded = false; };
 
 let bonusImage = new Image();
-bonusImage.src = './indir.png';
 let bonusImageLoaded = false;
+try {
+    bonusImage.src = encodeURI(BONUS_SRC); // Encode URI
+} catch(e) { console.error("Bonus resmi URL hatası:", e); }
 bonusImage.onload = () => { bonusImageLoaded = true; };
-bonusImage.onerror = () => { console.error("Bonus resmi yüklenemedi!"); bonusImageLoaded = false; };
+bonusImage.onerror = () => { console.error("Bonus resmi yüklenemedi! Yol:", BONUS_SRC); bonusImageLoaded = false; };
 
-const obstacleEmojis = ['🚗', '🚙', '🚕', '🚚', '🚌']; // Engel olarak kullanılacak emojiler
+const obstacleEmojis = ['🚗', '🚙', '🚕', '🚚', '🚌']; // Engeller
 let obstacles = [];
 let bonuses = [];
 let score = 0;
 let lives = 3;
-let gameSpeed = 3; // Başlangıç hızı
-let obstacleSpawnRate = 120; // Kaç frame'de bir engel spawn olacak (düşük = daha sık)
-let bonusSpawnRate = 800; // Bonus spawn rate (daha nadir)
+let baseSpeed = 4.5; // BAŞLANGIÇ HIZI ARTIRILDI
+let gameSpeed = baseSpeed;
+let baseSpawnRate = 100; // SPAWN SIKLIĞI ARTIRILDI (düşük = daha sık)
+let obstacleSpawnRate = baseSpawnRate;
+let bonusSpawnRate = 700; // Bonus nadirliği
 let frameCount = 0;
-let gameOver = false;
-let gameRunning = false; // Oyunun aktif olup olmadığını kontrol eder
+let gameOver = true; // Başlangıçta oyun bitti ekranı/başlangıç ekranı
+let gameRunning = false;
 let animationFrameId;
 
-// Zorluk Ayarları
-let difficultyIncreaseInterval = 500; // Kaç frame'de bir zorluk kontrolü
-let speedIncrement = 0.15; // Her zorluk artışında hız ne kadar artacak
-let spawnRateDecrement = 2; // Her zorluk artışında spawn süresi ne kadar azalacak (min 30)
-let baseSpeed = 3;
-let baseSpawnRate = 120;
+// Zorluk Ayarları (Daha Sert)
+let difficultyIncreaseInterval = 400; // Daha sık zorluk kontrolü
+let speedIncrement = 0.25; // Hız artışı daha fazla
+let spawnRateDecrement = 3.5; // Spawn azalması daha fazla (min 25)
+let minSpawnRate = 25; // Minimum spawn rate (daha zor)
 
-// Mobil kontrol için
-let moveLeftPressed = false;
-let moveRightPressed = false;
+// Mobil kontrol
+let moveLeftActive = false;
+let moveRightActive = false;
 
-// Günlük Limit Ayarları
-const DAILY_LIMIT_KEY = 'tiktakGameDailyPlays';
+// Günlük Limit
+const DAILY_LIMIT_KEY = 'kyrosilTiktakDailyPlays'; // Yeni unique key
 const MAX_PLAYS_PER_DAY = 3;
 
-// Ödül Kademeleri
+// Ödül Kademeleri (Aynı kaldı, sadece JS tarafında kullanılıyor)
 const rewardTiers = [
     { score: 500, message: "🏆 EPİK! 5 Günlük Ücretsiz Kiralama + 500 KM (Easy Grup) Kazandınız!" },
     { score: 400, message: "🎉 2 Günlük Ücretsiz Kiralama + 200KM (Easy Grup) Kazandınız!" },
@@ -87,117 +90,104 @@ const rewardTiers = [
     { score: 50, message: "💰 100 TL İndirim Kazandınız!" }
 ];
 
-//-------------------------------------------------
-// Günlük Limit Fonksiyonları
-//-------------------------------------------------
+// === Günlük Limit Fonksiyonları (Aynı kaldı) ===
 function checkDailyLimit() {
-    const today = new Date().toLocaleDateString(); // Günün tarihini al (örn: "29.04.2025")
+    const today = new Date().toLocaleDateString();
     let playData = localStorage.getItem(DAILY_LIMIT_KEY);
     let playCount = 0;
-
     if (playData) {
         try {
             playData = JSON.parse(playData);
-            if (playData.date === today) {
-                playCount = playData.count;
-            } else {
-                // Farklı bir gün, sayacı sıfırla
-                playCount = 0;
-                updateDailyLimit(0); // Tarihi güncellemek için
-            }
-        } catch (e) {
-            console.error("Local Storage verisi okunamadı.");
-            playCount = 0; // Hata varsa sıfırla
-            localStorage.removeItem(DAILY_LIMIT_KEY);
-        }
+            if (playData.date === today) { playCount = playData.count; }
+            else { updateDailyLimit(0); }
+        } catch (e) { localStorage.removeItem(DAILY_LIMIT_KEY); }
     }
-
     if (playCount >= MAX_PLAYS_PER_DAY) {
-        messageArea.textContent = `Bugünlük ${MAX_PLAYS_PER_DAY} oyun hakkınızı kullandınız. Yarın tekrar deneyin!`;
-        return false; // Limit doldu
+        messageArea.textContent = `Bugünlük ${MAX_PLAYS_PER_DAY} oyun hakkınızı kullandınız. Yarın tekrar gelin!`;
+        messageArea.style.display = 'block';
+        return false;
     }
-    messageArea.textContent = ""; // Limit dolmadıysa mesajı temizle
-    return true; // Oynayabilir
+    messageArea.textContent = "";
+    messageArea.style.display = 'none';
+    return true;
 }
-
 function updateDailyLimit(count) {
     const today = new Date().toLocaleDateString();
-    const playData = { date: today, count: count };
-    try {
-        localStorage.setItem(DAILY_LIMIT_KEY, JSON.stringify(playData));
-    } catch (e) {
-        console.error("Local Storage'a yazılamadı.");
-    }
+    try { localStorage.setItem(DAILY_LIMIT_KEY, JSON.stringify({ date: today, count: count })); }
+    catch (e) { console.error("Local Storage'a yazılamadı."); }
 }
-
 function incrementPlayCount() {
     const today = new Date().toLocaleDateString();
     let playData = localStorage.getItem(DAILY_LIMIT_KEY);
     let playCount = 0;
     if (playData) {
-         try {
-            playData = JSON.parse(playData);
-            if (playData.date === today) {
-                playCount = playData.count;
-            }
-        } catch(e) {/* Hata varsa 0 kalır */}
+         try { playData = JSON.parse(playData); if (playData.date === today) { playCount = playData.count; } }
+         catch(e) {/* Hata varsa 0 kalır */}
     }
     updateDailyLimit(playCount + 1);
 }
 
-//-------------------------------------------------
-// Oyun Kurulumu ve Boyutlandırma
-//-------------------------------------------------
+// === Oyun Kurulumu ve Boyutlandırma (Aynı kaldı) ===
 function resizeCanvas() {
-    // Konteyner genişliğini al, max 400px
-    const containerWidth = document.getElementById('game-container').clientWidth - 30; // padding'i çıkar
-    canvasWidth = Math.min(containerWidth, 380); // Max genişlik sınırı
+    const containerWidth = document.getElementById('game-container').clientWidth - 40; // İç padding'i (20+20) çıkar
+    canvasWidth = Math.min(containerWidth, 510); // Max genişlik (550 - 40 padding)
 
-    // Yüksekliği genişliğe göre ayarla (örneğin 4:3 oran)
-    canvasHeight = canvasWidth * 1.5; // Yüksekliği artırabiliriz
-    if (window.innerHeight < canvasHeight + 200) { // Ekran yüksekliğine sığdır
-         canvasHeight = window.innerHeight - 200;
-         canvasWidth = canvasHeight / 1.5;
+    canvasHeight = canvasWidth * 1.6; // Oranı ayarla (daha dikey)
+    if (window.innerHeight < canvasHeight + 250) { // Ekran yüksekliğine sığdır (header+ui+butonlar payı)
+         canvasHeight = Math.max(300, window.innerHeight - 250); // Minimum yükseklik 300px
+         canvasWidth = canvasHeight / 1.6; // Genişliği yüksekliğe göre ayarla
     }
+    // Canvas boyutlarını tam sayı yapalım
+    canvas.width = Math.floor(canvasWidth);
+    canvas.height = Math.floor(canvasHeight);
 
+    laneWidth = canvas.width / laneCount;
 
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-    laneWidth = canvasWidth / laneCount;
+    playerCar.width = canvas.width * playerCarWidthRatio;
+    playerCar.height = canvas.width * playerCarHeightRatio;
+    playerCar.x = (playerCar.lane * laneWidth) + (laneWidth / 2) - (playerCar.width / 2);
+    playerCar.y = canvas.height - playerCar.height - 15;
 
-    // Oyuncu ve nesne boyutlarını güncelle
-    playerCar.width = canvasWidth * playerCarWidthRatio;
-    playerCar.height = canvasWidth * playerCarHeightRatio; // Genişliğe oranla yükseklik
-    playerCar.x = laneWidth + (laneWidth / 2) - (playerCar.width / 2); // Orta şeritte başla
-    playerCar.y = canvasHeight - playerCar.height - 15; // Altta başla
-
-    // Mobil kontrol butonlarının stilini ayarla
     const isMobile = window.matchMedia("(max-width: 768px)").matches || ('ontouchstart' in window);
     mobileControls.style.display = isMobile ? 'flex' : 'none';
 }
 
-//-------------------------------------------------
-// Çizim Fonksiyonları
-//-------------------------------------------------
+// === Çizim Fonksiyonları ===
 function drawPlayer() {
+    // Oyuncuyu çizmeden önce canvas durumunu kaydet
+    // ctx.save();
+    // // İsteğe bağlı: Hafif eğim veya animasyon eklenebilir
+    // ctx.translate(playerCar.x + playerCar.width / 2, playerCar.y + playerCar.height / 2);
+    // // ctx.rotate(tiltAngle * Math.PI / 180); // Dönüş için
+    // ctx.translate(-(playerCar.x + playerCar.width / 2), -(playerCar.y + playerCar.height / 2));
+
     if (playerCar.loaded) {
         ctx.drawImage(playerCar.image, playerCar.x, playerCar.y, playerCar.width, playerCar.height);
     } else {
-        // Resim yüklenemezse fallback olarak dikdörtgen çiz
-        ctx.fillStyle = 'blue';
+        ctx.fillStyle = '#007bff'; // Mavi fallback
         ctx.fillRect(playerCar.x, playerCar.y, playerCar.width, playerCar.height);
+        ctx.strokeRect(playerCar.x, playerCar.y, playerCar.width, playerCar.height); // Kenarlık
     }
+    // Canvas durumunu geri yükle
+    // ctx.restore();
 }
 
 function drawObstacles() {
-    ctx.font = `${canvasWidth * obstacleHeightRatio * 0.9}px sans-serif`; // Emoji boyutunu ayarla
+    // Emoji boyutu daha dinamik
+    const emojiSize = Math.min(canvasWidth * obstacleHeightRatio * 0.8, 30); // Max 30px
+    ctx.font = `${emojiSize}px sans-serif`;
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle'; // Dikey hizalama için
+
     obstacles.forEach(obstacle => {
-         // Emoji çizimi (metin olarak)
-        ctx.fillText(obstacle.emoji, obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height * 0.8);
         // // Alternatif: Dikdörtgen çizimi
-        // ctx.fillStyle = 'red';
+        // ctx.fillStyle = '#6c757d'; // Gri engel
         // ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        // ctx.strokeStyle = '#343a40';
+        // ctx.strokeRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+
+        // Emoji çizimi (merkezlenmiş)
+        ctx.fillText(obstacle.emoji, obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
     });
 }
 
@@ -206,46 +196,48 @@ function drawBonuses() {
         if (bonusImageLoaded) {
             ctx.drawImage(bonusImage, bonus.x, bonus.y, bonus.width, bonus.height);
         } else {
-            // Fallback: Yıldız veya daire
+            // Fallback: Altın rengi daire
             ctx.fillStyle = 'gold';
+            ctx.strokeStyle = '#e6b800';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            // Basit bir daire çizelim
-            ctx.arc(bonus.x + bonus.width / 2, bonus.y + bonus.height / 2, bonus.width / 2, 0, Math.PI * 2);
+            ctx.arc(bonus.x + bonus.width / 2, bonus.y + bonus.height / 2, bonus.width / 2.2, 0, Math.PI * 2);
             ctx.fill();
+            ctx.stroke();
         }
     });
 }
 
-// Hareket eden yol çizgileri
+// Hareket eden yol çizgileri (İyileştirilmiş)
 let roadLineOffset = 0;
-const roadLineHeight = 30;
-const roadLineGap = 40;
+const roadLineHeight = canvasHeight * 0.05; // Yüksekliğe oranlı
+const roadLineGap = canvasHeight * 0.08;
 function drawRoadLines() {
-    ctx.strokeStyle = '#a0a0a0'; // Çizgi rengi
-    ctx.lineWidth = 4;
-    ctx.setLineDash([roadLineHeight, roadLineGap]); // Kesik çizgi ayarı
+    ctx.save(); // Mevcut durumu kaydet
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'; // Beyazımsı, yarı saydam
+    ctx.lineWidth = Math.max(2, canvasWidth * 0.01); // Genişliğe oranlı kalınlık
+    ctx.setLineDash([roadLineHeight, roadLineGap]);
 
-    roadLineOffset += gameSpeed / 2; // Hıza bağlı kaydırma
+    roadLineOffset += gameSpeed * 0.8; // Hıza bağlı kaydırma (daha yavaş)
     if (roadLineOffset > (roadLineHeight + roadLineGap)) {
         roadLineOffset = 0;
     }
 
+    // Yolun ortasına çizgi çizmek yerine şeritleri ayıran çizgiler
     for (let i = 1; i < laneCount; i++) {
         ctx.beginPath();
-        ctx.moveTo(i * laneWidth, -roadLineGap + roadLineOffset); // Yukarıdan başla
-        ctx.lineTo(i * laneWidth, canvasHeight + roadLineHeight + roadLineOffset); // Aşağıya kadar çiz
+        // Çizgiyi offset ile kaydır
+        ctx.moveTo(i * laneWidth, -roadLineGap + roadLineOffset);
+        ctx.lineTo(i * laneWidth, canvasHeight + roadLineHeight); // Ekran dışına taşsın
         ctx.stroke();
     }
-     // Çizgi desenini sıfırla
-    ctx.setLineDash([]);
+
+    ctx.restore(); // Kaydedilen durumu geri yükle (çizgi stili diğerlerini etkilemesin)
 }
 
-
-//-------------------------------------------------
-// Hareket ve Kontrol Fonksiyonları
-//-------------------------------------------------
+// === Hareket ve Kontrol ===
 function movePlayer(direction) {
-    if (gameOver) return;
+    if (gameOver || !gameRunning) return; // Oyun çalışmıyorsa hareket etme
     let targetLane = playerCar.lane;
     if (direction === 'left' && playerCar.lane > 0) {
         targetLane--;
@@ -255,8 +247,8 @@ function movePlayer(direction) {
 
     if (targetLane !== playerCar.lane) {
         playerCar.lane = targetLane;
-        // Yumuşak geçiş yerine anında geçiş yapalım şimdilik
         playerCar.x = (playerCar.lane * laneWidth) + (laneWidth / 2) - (playerCar.width / 2);
+        // playSound('move'); // Placeholder
     }
 }
 
@@ -270,116 +262,74 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Mobil Buton Kontrolleri
-leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveLeftPressed = true; }, { passive: false });
-leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); moveLeftPressed = false; });
-rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveRightPressed = true; }, { passive: false });
-rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); moveRightPressed = false; });
-
-// Mouse eventleri de ekleyelim (masaüstünde test için)
-leftBtn.addEventListener('mousedown', () => { moveLeftPressed = true; });
-leftBtn.addEventListener('mouseup', () => { moveLeftPressed = false; });
-leftBtn.addEventListener('mouseleave', () => { moveLeftPressed = false; }); // Butondan çıkarsa dur
-rightBtn.addEventListener('mousedown', () => { moveRightPressed = true; });
-rightBtn.addEventListener('mouseup', () => { moveRightPressed = false; });
-rightBtn.addEventListener('mouseleave', () => { moveRightPressed = false; });
-
-
-function handleMobileMovement() {
-     if (moveLeftPressed) {
-         // Sürekli basılı tutunca hareket yerine tek dokunuşta şerit değiştirsin
-         // movePlayer('left'); // Bunu kullanırsak hızlı olur, tek seferlik tetikleme daha iyi
-         // Şimdilik klavye gibi tek basışta hareket edecek,
-         // eğer basılı tutunca sürekli hareket istenirse farklı bir mantık gerekir.
-         // Bu basit oyunda şerit değiştirme daha mantıklı.
-         // Klavye event listener zaten tek basışı handle ediyor.
-         // Butonlara dokunulduğunda direkt movePlayer çağrılabilir.
-         // Ancak touchstart sürekli tetiklenebilir, bu yüzden dikkatli olmalı.
-         // En iyisi touchstart içinde movePlayer'ı çağırmak.
-         // Tekrar eden hareketi engellemek için küçük bir bekleme eklenebilir ama şimdilik basit tutalım.
-
-         // YENİ YAKLAŞIM: Touchstart içinde direkt movePlayer çağır.
-         // Yukarıdaki event listener'ları güncelleyelim:
-         // leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); movePlayer('left'); }, { passive: false });
-         // rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); movePlayer('right'); }, { passive: false });
-         // Mousedown için de aynısı
-         // leftBtn.addEventListener('mousedown', () => { movePlayer('left'); });
-         // rightBtn.addEventListener('mousedown', () => { movePlayer('right'); });
-         // NOT: Bu, butona her dokunulduğunda şerit değiştirmeye çalışır.
-         // Eğer kullanıcı parmağını kaldırmazsa sorun olabilir.
-         // İlk yaklaşıma geri dönelim - basılı tutma state'i ile kontrol.
-          playerCar.x -= playerCar.speed; // Bu yaklaşım şerit dışına taşır, KULLANMA!
-                                      // Şerit değiştirme mantığı en doğrusu.
-                                      // Event listener'ları touchstart'ta movePlayer yapacak şekilde güncelleyelim.
-     }
-     if (moveRightPressed) {
-          playerCar.x += playerCar.speed; // KULLANMA!
-     }
-     // Şerit sınırlarını kontrol etme burada gereksiz, movePlayer hallediyor.
-}
-// Event listener güncellemesi:
+// Mobil Buton Kontrolleri (Dokunulduğunda Şerit Değiştir)
 leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (!gameOver && gameRunning) movePlayer('left'); }, { passive: false });
 rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (!gameOver && gameRunning) movePlayer('right'); }, { passive: false });
 leftBtn.addEventListener('mousedown', () => { if (!gameOver && gameRunning) movePlayer('left'); });
 rightBtn.addEventListener('mousedown', () => { if (!gameOver && gameRunning) movePlayer('right'); });
 
 
-//-------------------------------------------------
-// Nesne Oluşturma (Spawn)
-//-------------------------------------------------
+// === Nesne Oluşturma (Spawn) ===
 function spawnObstacle() {
-    const lane = Math.floor(Math.random() * laneCount); // Rastgele şerit (0, 1, 2)
+    const lane = Math.floor(Math.random() * laneCount);
     const width = canvasWidth * obstacleWidthRatio;
-    const height = canvasWidth * obstacleHeightRatio; // Genişliğe oranlı yükseklik
+    const height = canvasWidth * obstacleHeightRatio;
     const x = (lane * laneWidth) + (laneWidth / 2) - (width / 2);
-    const y = -height; // Ekranın üstünden başla
+    const y = -height;
     const emoji = obstacleEmojis[Math.floor(Math.random() * obstacleEmojis.length)];
 
-    obstacles.push({ x, y, width, height, emoji });
+    // Aynı şeritte çok sık engel çıkmasını önle (basit kontrol)
+    const lastObstacleInLane = obstacles.filter(o => o.lane === lane).sort((a,b) => b.y - a.y)[0];
+    if(!lastObstacleInLane || lastObstacleInLane.y > height * 2.5) { // En az 2.5 engel boyu fark
+        obstacles.push({ x, y, width, height, emoji, lane });
+    } else {
+        // Çıkmazsa bir sonrakini bekle
+    }
 }
 
 function spawnBonus() {
-     // Bonusların daha zor konumlanması:
-     // Engellerden hemen sonra aynı şeritte veya dar alanlarda çıkabilir.
-     // Şimdilik basit rastgele şerit kullanalım, zorluk artınca konumu ayarlarız.
     const lane = Math.floor(Math.random() * laneCount);
     const width = canvasWidth * bonusWidthRatio;
     const height = canvasWidth * bonusHeightRatio;
     const x = (lane * laneWidth) + (laneWidth / 2) - (width / 2);
-    const y = -height * 2; // Engellerden biraz daha yukarıdan
+    let y = -height * 3; // Daha yukarıdan
 
-     // Zorluk: Bazen bir engelle aynı anda farklı şeritte spawn olabilir.
-     // Veya bir engelin hemen arkasına denk gelecek şekilde ayarlanabilir.
-     // Şimdilik sadece rastgele şerit.
+    // Zor Konumlandırma: Bazen bir engelin hemen arkasına denk getir
+    if (Math.random() < 0.3) { // %30 ihtimalle zor konum
+        const potentialObstacles = obstacles.filter(o => o.lane === lane && o.y < canvasHeight / 2 && o.y > 0);
+        if (potentialObstacles.length > 0) {
+            const targetObstacle = potentialObstacles[Math.floor(Math.random() * potentialObstacles.length)];
+             // Engelin biraz arkasına yerleştir (ama çok yakına değil)
+            y = targetObstacle.y - height * (1.5 + Math.random());
+             y = Math.max(-height*5, y); // Çok da yukarı gitmesin
+             console.log("Zor bonus konumlandı!");
+        }
+    }
 
-    bonuses.push({ x, y, width, height });
+     // Aynı anda o bölgede başka bonus var mı kontrol et
+     const nearbyBonus = bonuses.some(b => Math.abs(b.y - y) < canvasHeight * 0.2);
+     if(!nearbyBonus) {
+        bonuses.push({ x, y, width, height, lane });
+     }
 }
 
 
-//-------------------------------------------------
-// Güncelleme ve Çarpışma Kontrolü
-//-------------------------------------------------
+// === Güncelleme ve Çarpışma ===
 function updateObstacles() {
-    let passedObstacleCount = 0;
     for (let i = obstacles.length - 1; i >= 0; i--) {
         obstacles[i].y += gameSpeed;
-        // Ekran dışına çıkan engelleri sil ve skor artır
         if (obstacles[i].y > canvasHeight) {
             obstacles.splice(i, 1);
             if (!gameOver) {
-                score++; // Çarpılmadan geçen her engel için +1 puan
+                score++;
                 scoreElement.textContent = `Skor: ${score}`;
             }
-            passedObstacleCount++;
         }
     }
-    // return passedObstacleCount; // Bu bilgi zorluk için kullanılabilir
 }
-
 function updateBonuses() {
     for (let i = bonuses.length - 1; i >= 0; i--) {
-        bonuses[i].y += gameSpeed * 0.8; // Bonuslar biraz daha yavaş olabilir
-        // Ekran dışına çıkan bonusları sil
+        bonuses[i].y += gameSpeed * 0.9; // Bonuslar biraz yavaş
         if (bonuses[i].y > canvasHeight) {
             bonuses.splice(i, 1);
         }
@@ -387,125 +337,151 @@ function updateBonuses() {
 }
 
 function checkCollisions() {
-    // Engellerle Çarpışma
+    // Engellerle Çarpışma (Daha hassas kontrol)
+    const carHitbox = {
+        x: playerCar.x + playerCar.width * 0.1,
+        y: playerCar.y + playerCar.height * 0.1,
+        width: playerCar.width * 0.8,
+        height: playerCar.height * 0.8
+    };
+
     obstacles.forEach((obstacle, index) => {
+        const obsHitbox = {
+            x: obstacle.x + obstacle.width * 0.1,
+            y: obstacle.y + obstacle.height * 0.1,
+            width: obstacle.width * 0.8,
+            height: obstacle.height * 0.8
+        };
         if (
-            playerCar.x < obstacle.x + obstacle.width &&
-            playerCar.x + playerCar.width > obstacle.x &&
-            playerCar.y < obstacle.y + obstacle.height * 0.8 && // Çarpışma hissini iyileştir
-            playerCar.y + playerCar.height > obstacle.y + obstacle.height * 0.2
+            carHitbox.x < obsHitbox.x + obsHitbox.width &&
+            carHitbox.x + carHitbox.width > obsHitbox.x &&
+            carHitbox.y < obsHitbox.y + obsHitbox.height &&
+            carHitbox.y + carHitbox.height > obsHitbox.y
         ) {
-            obstacles.splice(index, 1); // Çarpılan engeli kaldır
+            obstacles.splice(index, 1);
             lives--;
             updateLivesDisplay();
+            // playSound('collision'); // Placeholder
+            // Ekranı hafif kırmızı yapma efekti
+            canvas.style.boxShadow = 'inset 0 0 15px 5px rgba(255, 0, 0, 0.5)';
+            setTimeout(() => { canvas.style.boxShadow = 'none'; }, 150);
+
             if (lives <= 0) {
                 endGame();
             }
-            // Küçük bir görsel efekt (ekran titremesi vb.) eklenebilir
-            canvas.style.borderColor = 'red';
-            setTimeout(() => { canvas.style.borderColor = '#333'; }, 100);
         }
     });
 
     // Bonuslarla Çarpışma
     bonuses.forEach((bonus, index) => {
          if (
-            playerCar.x < bonus.x + bonus.width &&
-            playerCar.x + playerCar.width > bonus.x &&
-            playerCar.y < bonus.y + bonus.height &&
-            playerCar.y + playerCar.height > bonus.y
+            carHitbox.x < bonus.x + bonus.width &&
+            carHitbox.x + carHitbox.width > bonus.x &&
+            carHitbox.y < bonus.y + bonus.height &&
+            carHitbox.y + carHitbox.height > bonus.y
         ) {
-            bonuses.splice(index, 1); // Toplanan bonusu kaldır
-            score += 5; // Bonus puanı
+            bonuses.splice(index, 1);
+            score += 5;
             scoreElement.textContent = `Skor: ${score}`;
-            // Bonus toplama efekti eklenebilir
+            // playSound('bonus'); // Placeholder
+            // Bonus toplama efekti (puanın yanında +5 göster?)
+            showScoreFeedback('+5', playerCar.x + playerCar.width / 2, playerCar.y);
          }
     });
 }
+
+// Anlık Skor Geri Bildirimi (Bonus için)
+let scoreFeedbacks = [];
+function showScoreFeedback(text, x, y) {
+    scoreFeedbacks.push({ text, x, y, alpha: 1, timer: 60 }); // 60 frame (1sn)
+}
+function updateAndDrawScoreFeedbacks() {
+    ctx.save();
+    ctx.font = 'bold 18px Poppins, sans-serif';
+    ctx.textAlign = 'center';
+    for (let i = scoreFeedbacks.length - 1; i >= 0; i--) {
+        let fb = scoreFeedbacks[i];
+        fb.y -= 0.5; // Yukarı doğru hareket
+        fb.alpha -= 0.016; // Yavaşça solma
+        fb.timer--;
+        ctx.fillStyle = `rgba(255, 215, 0, ${fb.alpha})`; // Altın rengi
+        ctx.fillText(fb.text, fb.x, fb.y);
+        if (fb.timer <= 0 || fb.alpha <= 0) {
+            scoreFeedbacks.splice(i, 1);
+        }
+    }
+    ctx.restore();
+}
+
 
 function updateLivesDisplay() {
     livesElement.textContent = `Can: ${'❤️'.repeat(Math.max(0, lives))}`;
 }
 
-//-------------------------------------------------
-// Zorluk Ayarlama
-//-------------------------------------------------
+// === Zorluk Ayarlama (İyileştirilmiş) ===
 function updateDifficulty() {
-    // İlk 50 puan daha kontrollü zorluk
-    if (score < 50 && frameCount > 0) { // frameCount > 0 başlangıçta hemen artmasın diye
-        // Başlangıç zorluğu (çok kolay olmasın)
-        gameSpeed = baseSpeed + (score * 0.02); // Skora göre hafif hız artışı
-        obstacleSpawnRate = Math.max(45, baseSpawnRate - Math.floor(score / 5)); // Skora göre hafif sıklaşma
+    // İlk 50 puan için daha kontrollü ama yine de artan zorluk
+    if (score < 50) {
+        gameSpeed = baseSpeed + (score * 0.04); // Hız artışı biraz daha fazla
+        obstacleSpawnRate = Math.max(minSpawnRate + 10, baseSpawnRate - score * 1.2); // Sıklaşma daha belirgin
     }
     // 50 puandan sonra sert artış
     else if (score >= 50) {
-        // Her `difficultyIncreaseInterval` frame'de bir zorluğu artır
-        if (frameCount % difficultyIncreaseInterval === 0) {
-             // Hızı daha agresif artır
-            gameSpeed += speedIncrement + (score / 500); // Skor arttıkça artış da artsın
-            // Spawn oranını daha agresif azalt (minimum 30 frame)
-            obstacleSpawnRate = Math.max(30, obstacleSpawnRate - (spawnRateDecrement + Math.floor(score / 100)));
-            console.log(`Zorluk Arttı! Hız: ${gameSpeed.toFixed(2)}, Spawn Rate: ${obstacleSpawnRate.toFixed(0)}`);
+        if (frameCount % difficultyIncreaseInterval === 0) { // Sık kontrol
+            // Hızı üssel veya daha agresif artır
+            gameSpeed += speedIncrement + (score / 800); // Bölüm daha küçük, artış fazla
+            // Spawn oranını daha da agresif azalt
+            obstacleSpawnRate = Math.max(minSpawnRate, obstacleSpawnRate - (spawnRateDecrement + Math.floor(score / 150)));
+            console.log(`Zorluk Arttı! Skor: ${score}, Hız: ${gameSpeed.toFixed(2)}, Spawn Rate: ${obstacleSpawnRate.toFixed(0)}`);
         }
-         // Bonus çıkma sıklığı da azalabilir veya konumları zorlaşabilir
-         // bonusSpawnRate'i de skora göre azaltabiliriz.
-         if (frameCount % 1500 === 0) { // Daha seyrek kontrol
-             bonusSpawnRate = Math.max(400, 800 - score); // Skor arttıkça bonus sıklaşsın ama min 400 frame
-         }
+        // Bonus spawn rate'i de zorlukla ayarla (daha nadir çıksın?)
+        if (score > 150 && score < 300) bonusSpawnRate = 900;
+        else if (score >= 300) bonusSpawnRate = 1000;
+        else bonusSpawnRate = 700; // Başlangıçta biraz sık çıksın
     }
 }
 
-//-------------------------------------------------
-// Ödül Kontrolü
-//-------------------------------------------------
+// === Ödül Kontrolü (Aynı kaldı) ===
 function checkRewards(finalScore) {
     for (const tier of rewardTiers) {
-        if (finalScore >= tier.score) {
-            return tier.message; // En yüksek uygun ödülü döndür
-        }
+        if (finalScore >= tier.score) { return tier.message; }
     }
-    return "Bu seferlik ödül kazanamadınız. Tekrar deneyin!"; // Hiçbir barem geçilemediyse
+    return "Bu seferlik ödül kazanamadınız. Tekrar deneyin!";
 }
 
-
-//-------------------------------------------------
-// Oyun Döngüsü
-//-------------------------------------------------
+// === Oyun Döngüsü ===
 function gameLoop() {
-    if (gameOver) return;
+    if (gameOver) return; // Oyun bittiyse veya başlamadıysa döngüden çık
 
     // Canvas'ı temizle
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // Yol çizgilerini çiz
-    drawRoadLines();
+    // === Çizim Sırası ===
+    drawRoadLines();      // Önce yol
+    drawObstacles();      // Sonra engeller
+    drawBonuses();        // Sonra bonuslar
+    drawPlayer();         // En üste oyuncu
+    updateAndDrawScoreFeedbacks(); // Skor geri bildirimleri
 
-    // Nesneleri güncelle ve çiz
+    // === Güncelleme ve Kontroller ===
     updateObstacles();
     updateBonuses();
-    drawObstacles();
-    drawBonuses();
-
-    // Oyuncuyu çiz
-    drawPlayer();
-
-    // Çarpışmaları kontrol et
     checkCollisions();
 
-    // Zorluğu güncelle (eğer oyun bitmediyse)
+    // Oyun bitmediyse zorluğu güncelle
     if (!gameOver) {
       updateDifficulty();
     }
 
-
-    // Yeni nesneleri spawn et
+    // === Nesne Spawn ===
     frameCount++;
-    if (frameCount % Math.floor(obstacleSpawnRate) === 0) {
+    // Spawn oranını kontrol et
+    if (frameCount % Math.max(1, Math.floor(obstacleSpawnRate)) === 0) { // 0'a bölünmeyi engelle
         spawnObstacle();
     }
-    if (frameCount % Math.floor(bonusSpawnRate) === 0) {
-        // Bonus nadirliği
-        if (Math.random() < 0.4) { // %40 ihtimalle bonus spawn et
+     // Bonus spawn etme
+    if (frameCount % Math.max(1, Math.floor(bonusSpawnRate)) === 0) {
+        if (Math.random() < 0.35) { // Bonus çıkma ihtimali
              spawnBonus();
         }
     }
@@ -514,163 +490,199 @@ function gameLoop() {
     animationFrameId = requestAnimationFrame(gameLoop);
 }
 
-//-------------------------------------------------
-// Oyun Durumu Yönetimi
-//-------------------------------------------------
+// === Oyun Durumu Yönetimi ===
 function startGame() {
-    if (!checkDailyLimit()) {
-        // Limit doluysa başlatma
-        // Mesaj zaten checkDailyLimit içinde gösterildi.
-        // Belki bir butonu disable edebiliriz ama şimdilik gerek yok.
-        return;
-    }
+    if (gameRunning) return; // Zaten çalışıyorsa tekrar başlatma
 
-    // Oyun değişkenlerini sıfırla
+    if (!checkDailyLimit()) { return; } // Limit kontrolü
+
+    // Sıfırlama
     score = 0;
     lives = 3;
-    gameSpeed = baseSpeed; // Zorluğu sıfırla
-    obstacleSpawnRate = baseSpawnRate; // Zorluğu sıfırla
-    bonusSpawnRate = 800; // Zorluğu sıfırla
+    gameSpeed = baseSpeed;
+    obstacleSpawnRate = baseSpawnRate;
+    bonusSpawnRate = 700;
     obstacles = [];
     bonuses = [];
+    scoreFeedbacks = [];
     frameCount = 0;
-    gameOver = false;
-    gameRunning = true; // Oyunu başlat
-    moveLeftPressed = false; // Buton state'lerini sıfırla
-    moveRightPressed = false;
+    gameOver = false; // Oyun artık bitmedi
+    gameRunning = true; // Oyun çalışıyor
 
     scoreElement.textContent = `Skor: ${score}`;
     updateLivesDisplay();
-    gameOverScreen.style.display = 'none'; // Oyun bitti ekranını gizle
-    stopConfetti(); // Varsa konfetiyi durdur
+    startScreen.classList.remove('visible'); // Başlangıç ekranını gizle
+    gameOverScreen.style.display = 'none';
+    messageArea.style.display = 'none'; // Mesajı gizle
+    stopConfetti();
 
-    // Canvas boyutunu ayarla (özellikle ilk çalıştırmada önemli)
-    resizeCanvas();
-     // Oyuncu pozisyonunu sıfırla
+    resizeCanvas(); // Canvas boyutunu tekrar ayarla (emin olmak için)
     playerCar.lane = 1;
     playerCar.x = (playerCar.lane * laneWidth) + (laneWidth / 2) - (playerCar.width / 2);
-    playerCar.y = canvasHeight - playerCar.height - 15;
+    playerCar.y = canvas.height - playerCar.height - 15;
 
-    // Mevcut animasyon döngüsünü durdur (varsa)
-    if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-    }
-    // Yeni oyun döngüsünü başlat
-    gameLoop();
+    if (animationFrameId) { cancelAnimationFrame(animationFrameId); }
+    gameLoop(); // Döngüyü başlat
 }
 
 function endGame() {
-    if (gameOver) return; // Zaten bittiyse tekrar bitirme
+    if (gameOver) return;
     gameOver = true;
     gameRunning = false;
-    cancelAnimationFrame(animationFrameId); // Oyun döngüsünü durdur
-    incrementPlayCount(); // Oyun sayacını artır
+    cancelAnimationFrame(animationFrameId);
+    incrementPlayCount();
+    // playSound('gameOver'); // Placeholder
 
-    // Son skoru ve ödül mesajını göster
     finalScoreElement.textContent = `Skorun: ${score}`;
     const reward = checkRewards(score);
     rewardMessageElement.textContent = reward;
 
-    if (reward.includes("Kazandınız")) { // Eğer bir ödül kazanıldıysa
-        emailInstructionElement.innerHTML = `Ödülünü almak için oyun sonu ekranının görüntüsünü <a href="mailto:${REWARD_EMAIL}?subject=Tiktak Oyun Ödülü - Skor: ${score}" style="color: #007bff;">${REWARD_EMAIL}</a> adresine gönder.<br>Ödülün 20 dakika içerisinde iletilecektir!`;
-        startConfetti(); // Konfetiyi başlat
+    if (reward.includes("Kazandınız")) {
+        emailInstructionElement.innerHTML = `Ödülünü almak için bu ekranın görüntüsünü <a href="mailto:${REWARD_EMAIL}?subject=Kyrosil Tiktak Oyun Ödülü - Skor: ${score}" target="_blank" style="color: #0056b3; font-weight:bold;">${REWARD_EMAIL}</a> adresine gönder.<br>Ödülün genellikle 20 dakika içerisinde iletilir!`;
+        startConfetti();
     } else {
         emailInstructionElement.textContent = "Daha yüksek skorla tekrar dene!";
         stopConfetti();
     }
 
     gameOverScreen.style.display = 'flex'; // Oyun bitti ekranını göster
+    gameOverScreen.classList.add('visible'); // Görünür yap
 }
 
-// Yeniden başlatma butonu
+// === Başlangıç Ekranı Kurulumu ===
+function populateRewardList() {
+    rewardListElement.innerHTML = ''; // Listeyi temizle
+    rewardTiers.forEach(tier => {
+        const li = document.createElement('li');
+        // Skoru daha belirgin yapalım
+        li.innerHTML = `<strong style="color:#e63946;">${tier.score} Puan:</strong> ${tier.message.split('Kazandınız!')[0].replace('EPİK!','').replace('🎉','').replace('💰','').trim()}`;
+        rewardListElement.appendChild(li);
+    });
+}
+
+// === Event Listener'lar ===
+startBtn.addEventListener('click', startGame);
 restartBtn.addEventListener('click', () => {
     // Yeniden başlatmadan önce limiti tekrar kontrol et!
     if (checkDailyLimit()) {
-         startGame();
+         // Oyun bitti ekranını hemen gizleyip başlat
+         gameOverScreen.classList.remove('visible');
+         // Kısa bir gecikme ile başlatmak daha iyi olabilir
+         setTimeout(startGame, 100);
     } else {
-        // Limit doluysa sadece ekranı kapatabilir veya mesaj gösterebilir
-        // Şimdilik sadece başlatmayı engelliyoruz.
+       // Limit doluysa başlatma, mesaj zaten gösteriliyor olmalı
     }
 });
 
-//-------------------------------------------------
-// Konfeti Fonksiyonları (Basit)
-//-------------------------------------------------
-let confettiInterval;
+// === Başlangıç ===
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('load', () => {
+    populateRewardList(); // Ödül listesini doldur
+    resizeCanvas();
+    // Başlangıçta başlangıç ekranını göster
+    startScreen.style.display = 'flex';
+    startScreen.classList.add('visible');
+    gameOverScreen.style.display = 'none'; // Oyun bitti ekranı gizli
+    gameOver = true; // Oyun henüz başlamadı
+    gameRunning = false;
+});
 
+// === Ses Placeholder ===
+/*
+// Sesleri yönetmek için basit bir obje
+const sounds = {
+    // collision: new Audio('path/to/collision.wav'),
+    // bonus: new Audio('path/to/bonus.wav'),
+    // move: new Audio('path/to/move.wav'),
+    // gameOver: new Audio('path/to/gameover.wav'),
+    // backgroundMusic: new Audio('path/to/music.mp3')
+};
+
+// Kullanıcı etkileşimi olmadan ses çalmak genellikle engellenir.
+// İlk kullanıcı etkileşiminde (örn: start butonuna tıklama) sesleri başlatmak gerekebilir.
+let audioContextStarted = false;
+function initAudio() {
+    if (audioContextStarted) return;
+    // Tüm sesleri bir kere 'play().catch()' ile başlatmayı dene (iOS uyumluluğu için)
+    Object.values(sounds).forEach(sound => {
+        if(sound && sound.load) { // Kontrol ekle
+             sound.load(); // Yüklemeyi tetikle
+             sound.play().then(() => sound.pause()).catch(e => {}); // Oynatıp durdurmayı dene
+        }
+    });
+    audioContextStarted = true;
+    console.log("Sesler hazırlandı.");
+    // Arka plan müziğini başlatmak istersen:
+    // if (sounds.backgroundMusic) {
+    //     sounds.backgroundMusic.loop = true;
+    //     sounds.backgroundMusic.volume = 0.3; // Ses ayarı
+    //     sounds.backgroundMusic.play().catch(e => console.error("Müzik çalınamadı:", e));
+    // }
+}
+
+function playSound(soundName) {
+    if (!audioContextStarted) {
+        console.warn("Sesler henüz başlatılmadı (kullanıcı etkileşimi bekleniyor).");
+        return;
+    }
+    if (sounds[soundName] && sounds[soundName].play) {
+        sounds[soundName].currentTime = 0; // Sesi başa sar
+        sounds[soundName].play().catch(e => console.error(`Ses çalınamadı (${soundName}):`, e));
+    }
+}
+
+// Start butonuna tıklanınca sesleri hazırla:
+// startBtn.addEventListener('click', () => {
+//     initAudio();
+//     startGame(); // startGame'i yine çağır ama initAudio önce çalışsın
+// });
+// VEYA startGame içinde çağır:
+// function startGame() {
+//    initAudio(); // Sesleri başlat/hazırla
+//    ... (geri kalan kod)
+//}
+
+*/
+
+
+// === Konfeti Fonksiyonları (Aynı kaldı) ===
+let confettiInterval;
+function createConfettiPiece() { /* ... önceki kod ... */ }
+function startConfetti() { /* ... önceki kod ... */ }
+function stopConfetti() { /* ... önceki kod ... */ }
+// createConfettiPiece içindeki kod:
 function createConfettiPiece() {
     const piece = document.createElement('div');
     piece.classList.add('confetti');
     piece.style.left = `${Math.random() * 100}%`;
-    // Başlangıç pozisyonunu biraz yukarı alalım
-    piece.style.top = `${-10 - Math.random() * 20}px`;
-    const colors = ['#ff4d4d', '#fcca4d', '#36a4e0', '#4caf50', '#e91e63', '#ffffff'];
+    piece.style.top = `${-10 - Math.random() * 20}px`; // Yukarıdan başla
+    const colors = ['#e63946', '#fca311', '#2a9d8f', '#ffffff', '#007bff', '#ffc107']; // Tiktak ve diğer renkler
     piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
-     // Düşüş animasyonunu rastgele geciktirme
-    piece.style.animationDelay = `${Math.random() * 1.5}s`;
-    piece.style.animationDuration = `${2 + Math.random() * 2}s`; // Farklı hızlar
+    const rotation = Math.random() * 720 - 360; // Daha fazla dönüş
+    piece.style.transform = `rotate(${rotation}deg)`;
+    piece.style.width = `${6 + Math.random() * 6}px`; // Farklı boyutlar
+    piece.style.height = `${10 + Math.random() * 10}px`;
+    piece.style.opacity = `${0.7 + Math.random() * 0.3}`; // Farklı opaklık
+    piece.style.animationDelay = `${Math.random() * 0.5}s`; // Daha hızlı başlama
+    piece.style.animationDuration = `${2.5 + Math.random() * 2}s`; // Farklı hızlar
     confettiContainer.appendChild(piece);
-
-    // Parçacık animasyon bitince DOM'dan kaldır
-    piece.addEventListener('animationend', () => {
-        piece.remove();
-    });
-     // Veya belirli bir süre sonra kaldır
-     setTimeout(() => {
-         if (piece) piece.remove();
-     }, 4000); // 4 saniye sonra temizle
+    setTimeout(() => { piece.remove(); }, 4500); // 4.5sn sonra temizle
 }
-
 function startConfetti() {
-    stopConfetti(); // Öncekini durdur
-    confettiContainer.innerHTML = ''; // Temizle
-    // Belirli aralıklarla yeni konfeti parçacıkları oluştur
-    confettiInterval = setInterval(createConfettiPiece, 100); // Her 100ms'de bir
-     // Bir süre sonra konfetiyi durdur (örneğin 5 saniye)
-     setTimeout(stopConfetti, 5000);
+    stopConfetti();
+    confettiContainer.innerHTML = '';
+    // Daha yoğun konfeti
+    let confettiCount = 0;
+    confettiInterval = setInterval(() => {
+        if (confettiCount < 150) { // Toplam 150 parça
+             createConfettiPiece();
+             confettiCount++;
+        } else {
+            stopConfetti(); // Yeterince çıkınca durdur
+        }
+    }, 30); // Daha sık
 }
-
 function stopConfetti() {
     clearInterval(confettiInterval);
-     // Kalan konfetileri de temizleyebiliriz ama animasyonla kaybolmaları daha iyi
-     // setTimeout(() => { confettiContainer.innerHTML = ''; }, 4000);
+    // Kalanlar animasyonla kaybolur
 }
-
-
-//-------------------------------------------------
-// Başlangıç
-//-------------------------------------------------
-// Ekran boyutuna göre canvas'ı ayarla ve oyunu başlatmaya hazır hale getir
-window.addEventListener('resize', resizeCanvas);
-window.addEventListener('load', () => {
-    resizeCanvas(); // İlk yüklemede boyutlandır
-    // Oyunu hemen başlatmak yerine bir "Başlat" butonu eklemek daha iyi olabilir
-    // Şimdilik direkt başlatıyoruz (limit kontrolü yapıldıktan sonra)
-    messageArea.textContent = "Oyuna başlamak için YENİDEN BAŞLAT butonuna tıklayın veya klavyeyi kullanın.";
-    // Veya direkt başlat:
-     // if (checkDailyLimit()) {
-     //     startGame();
-     // }
-     // Şimdilik başlatmayalım, kullanıcı restart ile başlatsın
-     gameRunning = false; // Oyun başlangıçta çalışmıyor
-     gameOver = true; // Oyun başlangıçta bitmiş gibi davranıp restart beklesin
-     finalScoreElement.textContent = "";
-     rewardMessageElement.textContent = "Hazırsan Başla!";
-     emailInstructionElement.textContent = "";
-     gameOverScreen.style.display = 'flex'; // Başlangıçta bilgi ekranını göster
-     stopConfetti();
-});
-
-// Klavye ile oyunu başlatma (ilk hareket)
-// Sadece oyun bitti ekranındayken ilk tuş basımında başlatsın
-document.addEventListener('keydown', (e) => {
-    if(gameOver && (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a' || e.key === 'ArrowRight' || e.key.toLowerCase() === 'd')) {
-         if (checkDailyLimit()) {
-             startGame();
-         }
-    }
-}, { once: true }); // Sadece bir kere tetiklensin diye, ama bu riskli olabilir, kaldıralım
-
-
-// Restart butonu zaten startGame'i çağırıyor.
