@@ -1,217 +1,322 @@
-/* Genel Stiller */
+/* === Genel Stiller ve Font === */
 body {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #f0f0f0; /* Açık gri arka plan */
-    font-family: sans-serif;
-    overflow: hidden; /* Kaydırma çubuklarını engelle */
+    background-color: #eef1f5; /* Daha açık ve modern arka plan */
+    font-family: 'Poppins', sans-serif; /* Google Font */
+    overflow: hidden;
 }
 
 #game-container {
-    position: relative; /* Overlay'ler için */
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #ffffff; /* Oyun alanı arka planı */
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    max-width: 400px; /* Maksimum genişlik */
+    background-color: #ffffff;
+    padding: 20px; /* Padding ayarlandı */
+    border-radius: 15px; /* Daha yuvarlak */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* Hafif belirgin gölge */
+    max-width: 550px; /* WEB GÖRÜNÜMÜ GENİŞLETİLDİ */
     width: 95%;
     box-sizing: border-box;
+    border: 1px solid #ddd;
 }
 
-h1 {
-    margin: 0 0 10px 0;
-    color: #ff4d4d; /* Tiktak kırmızısı gibi */
-    font-size: 1.8em;
+/* === Başlık ve Logolar === */
+#header {
+    display: flex;
+    align-items: center; /* Dikey hizalama */
+    justify-content: space-between; /* Elemanları dağıt */
+    width: 100%;
+    margin-bottom: 15px; /* UI ile araya boşluk */
+    border-bottom: 1px solid #eee; /* İnce ayırıcı */
+    padding-bottom: 10px;
+}
+#header img {
+    height: 35px; /* Logo yüksekliği */
+    width: auto; /* Oranı koru */
+}
+#logo-left {
+   /* Tiktak logosu için ek stil gerekirse */
+}
+#logo-right {
+   /* Kyrosil logosu için ek stil gerekirse */
+   opacity: 0.9;
 }
 
+#header h1 {
+    margin: 0 10px; /* Logolarla arasına boşluk */
+    color: #e63946; /* Daha canlı bir kırmızı */
+    font-size: 1.6em; /* Boyut ayarlandı */
+    font-weight: 700; /* Kalın */
+    text-align: center;
+    flex-grow: 1; /* Ortada kalan alanı doldur */
+    white-space: nowrap; /* Taşmayı engelle */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Sığmazsa ... koy */
+}
+
+
+/* === UI Elemanları (Skor, Can) === */
 #ui-container {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     font-size: 1.1em;
-    font-weight: bold;
-    color: #333;
+    font-weight: 600; /* Biraz daha kalın */
+    color: #495057; /* Koyu gri */
 }
+#score { text-align: left; }
+#lives { text-align: right; color: #e63946; } /* Başlık rengiyle uyumlu */
 
-#score {
-    text-align: left;
-}
-
-#lives {
-    text-align: right;
-    color: #dc3545; /* Canlar için kırmızı */
-}
-
-/* Oyun Alanı (Canvas) */
+/* === Oyun Alanı (Canvas) === */
 #gameCanvas {
-    border: 2px solid #333;
-    background-color: #5c5c5c; /* Yol rengi */
-    display: block; /* Altındaki boşluğu kaldırır */
-    width: 100%; /* Konteyner genişliğine uyar */
-    /* Yükseklik JS ile ayarlanacak */
-    box-sizing: border-box;
-    overflow: hidden; /* İçerik taşmasını engelle */
-}
-
-/* Mobil Kontrol Butonları */
-#mobile-controls {
-    display: none; /* Başlangıçta gizli, sadece mobilde gösterilir */
+    border: 1px solid #ccc; /* Daha ince kenarlık */
+    background-color: #f8f9fa; /* Çok açık gri yol zemini */
+    display: block;
     width: 100%;
-    margin-top: 10px;
-    justify-content: space-between;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 5px; /* Hafif yuvarlak köşe */
+     /* Yol çizgileri için belki gradient arka plan? */
+    /* background-image: linear-gradient(to bottom, #f8f9fa 95%, #e9ecef 100%); */
 }
 
+/* === Mobil Kontrol Butonları (Modernleştirilmiş) === */
+#mobile-controls {
+    display: none;
+    width: 100%;
+    margin-top: 15px;
+    justify-content: space-between;
+    gap: 10px; /* Butonlar arası boşluk */
+}
 #mobile-controls button {
     width: 48%;
-    padding: 15px 10px;
-    font-size: 1.2em;
-    font-weight: bold;
-    background-color: #ff4d4d; /* Tiktak rengi */
+    padding: 12px 5px; /* Padding ayarlandı */
+    font-size: 1.1em; /* Boyut ayarlandı */
+    font-weight: 600;
+    /* Gradient arka plan */
+    background-image: linear-gradient(to bottom, #ff6b6b, #e63946);
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    user-select: none; /* Metin seçmeyi engelle */
-    -webkit-user-select: none; /* Safari için */
-    touch-action: manipulation; /* Dokunma gecikmesini azalt */
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    display: flex; /* İçeriği (ikon/yazı) hizalamak için */
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* İkon ve yazı arası boşluk */
+    box-shadow: 0 3px 6px rgba(230, 57, 70, 0.3);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+#mobile-controls button .arrow {
+    font-size: 1.2em; /* Okları belirginleştir */
 }
 #mobile-controls button:active {
-    background-color: #cc0000; /* Basılınca renk değişimi */
+    background-image: linear-gradient(to top, #ff6b6b, #e63946); /* Basılınca ters gradient */
+    transform: scale(0.98); /* Hafif küçülme efekti */
 }
 
-
-/* Oyun Bitti Ekranı */
+/* === Overlay Ekranlar (Başlangıç ve Oyun Bitti) === */
 .overlay {
-    position: absolute; /* Konteynerin üzerine */
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.75); /* Yarı saydam siyah */
-    display: flex;
+    background-color: rgba(0, 0, 0, 0.8); /* Daha koyu overlay */
+    display: flex; /* İçeriği ortalamak için flex kullan */
     justify-content: center;
     align-items: center;
-    border-radius: 10px; /* Konteyner ile aynı */
-    z-index: 10; /* Diğer her şeyin üzerinde */
+    border-radius: 15px; /* Konteyner ile aynı */
+    z-index: 10;
+    opacity: 0; /* Başlangıçta görünmez */
+    visibility: hidden; /* Erişilemez */
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Yumuşak geçiş */
+}
+.overlay.visible { /* JS ile eklenecek class */
+    opacity: 1;
+    visibility: visible;
 }
 
 .overlay-content {
     background-color: white;
-    padding: 30px;
+    padding: 25px 30px; /* Padding ayarlandı */
     border-radius: 10px;
     text-align: center;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    max-width: 85%;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+    max-width: 90%;
+    max-height: 90%; /* Ekranı kaplamasın */
+    overflow-y: auto; /* İçerik sığmazsa kaydır */
 }
 
 .overlay-content h2 {
     margin-top: 0;
-    color: #dc3545;
-    font-size: 2em;
+    color: #e63946; /* Başlık rengi */
+    font-size: 1.8em; /* Boyut ayarlandı */
+    margin-bottom: 20px;
 }
 
-#finalScore {
-    font-size: 1.5em;
-    font-weight: bold;
-    margin-bottom: 10px;
+/* Başlangıç Ekranı Özel Stilleri */
+#startScreen .instructions {
+    font-size: 0.95em;
+    color: #495057;
+    margin-bottom: 15px;
+    text-align: left; /* Açıklamalar sola dayalı */
+    line-height: 1.6;
 }
-
-#rewardMessage {
+#startScreen .rewards-info {
+    margin-top: 20px;
+    text-align: left;
+    font-size: 0.9em;
+}
+#startScreen .rewards-info strong {
+    color: #333;
+    display: block;
+    margin-bottom: 8px;
+}
+#startScreen #rewardList {
+    list-style: none;
+    padding-left: 10px;
+    margin: 0;
+    color: #555;
+}
+#startScreen #rewardList li {
+    margin-bottom: 5px;
+    padding-left: 15px;
+    position: relative;
+}
+#startScreen #rewardList li::before { /* Liste başına ikon */
+    content: '🏆';
+    position: absolute;
+    left: 0;
+    top: 0px;
+    font-size: 0.9em;
+}
+#start-btn {
+    padding: 12px 30px;
     font-size: 1.2em;
-    color: #28a745; /* Yeşil başarı rengi */
+    font-weight: bold;
+    background-color: #4CAF50; /* Yeşil başlangıç butonu */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 25px;
+    transition: background-color 0.2s ease;
+}
+#start-btn:hover {
+    background-color: #45a049;
+}
+
+
+/* Oyun Bitti Ekranı Özel Stilleri */
+#finalScore {
+    font-size: 1.6em; /* Boyut ayarlandı */
+    font-weight: 700; /* Daha kalın */
+    margin-bottom: 10px;
+    color: #333;
+}
+#rewardMessage {
+    font-size: 1.25em; /* Boyut ayarlandı */
+    color: #2a9d8f; /* Turkuaz/Yeşil tonu */
     font-weight: bold;
     margin-bottom: 15px;
+}
+#emailInstruction {
+    font-size: 0.9em !important;
+    color: #555; /* Daha okunaklı renk */
+    margin-top: 20px !important;
+    line-height: 1.5;
+}
+#emailInstruction a {
+    color: #007bff !important; /* Link rengi */
+    font-weight: bold;
+    text-decoration: underline;
 }
 
 #restart-btn {
     padding: 12px 25px;
     font-size: 1.1em;
     font-weight: bold;
-    background-color: #007bff; /* Mavi */
+    background-color: #007bff;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px; /* Diğer butonlarla uyumlu */
     cursor: pointer;
-    margin-top: 20px;
+    margin-top: 25px; /* Boşluk */
+    transition: background-color 0.2s ease;
 }
 #restart-btn:hover {
     background-color: #0056b3;
 }
 
-/* Mesaj Alanı (Limit vb.) */
+/* Mesaj Alanı */
 #message-area {
-    margin-top: 10px;
-    min-height: 20px; /* Boşken bile yer kaplasın */
+    margin-top: 15px; /* Boşluk artırıldı */
+    min-height: 20px;
     color: #dc3545;
     font-weight: bold;
     text-align: center;
+    font-size: 0.9em;
 }
 
-
-/* Konfeti için temel stil (JS daha çok iş yapacak) */
+/* Konfeti Stilleri */
 #confetti-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    pointer-events: none; /* Tıklamayı engelle */
-    z-index: 11; /* İçeriğin üzerinde */
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    overflow: hidden; pointer-events: none; z-index: 11;
 }
-
 .confetti {
-    position: absolute;
-    width: 8px;
-    height: 15px;
-    background-color: red; /* Renkler JS ile değişecek */
-    opacity: 0.9;
-    border-radius: 2px;
-    animation: fall 3s linear infinite;
+    position: absolute; width: 8px; height: 15px; opacity: 0.9;
+    border-radius: 2px; animation: fall 3s linear infinite;
+    /* Renkler JS ile atanacak */
 }
-
 @keyframes fall {
-    to {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 0;
-    }
+    to { transform: translateY(100vh) rotate(720deg); opacity: 0; } /* Daha fazla dönüş */
 }
 
-/* Mobil Cihaz Özel Stilleri */
-@media (max-width: 768px) or (pointer: coarse) { /* Dokunmatik veya dar ekran */
-    #mobile-controls {
-        display: flex; /* Mobilde butonları göster */
+/* === Mobil Cihaz Özel Stilleri === */
+@media (max-width: 768px) or (pointer: coarse) {
+    body { /* Mobilde tam ekran hissi */
+        align-items: flex-start; /* Yukarıdan başla */
+        padding-top: 10px; /* Üst boşluk */
     }
-     h1 {
-        font-size: 1.5em;
+    #game-container {
+        width: 95%; /* Ekranı daha iyi doldur */
+        padding: 15px; /* İç boşluk */
+        border-radius: 10px;
+        margin-top: 0;
     }
-    #ui-container {
-        font-size: 1em;
-    }
-    .overlay-content {
-        padding: 20px;
-    }
-    .overlay-content h2 {
-        font-size: 1.6em;
-    }
-     #finalScore {
-        font-size: 1.3em;
-    }
-    #rewardMessage {
-        font-size: 1em;
-    }
-    #emailInstruction {
-        font-size: 0.8em !important; /* !important gerekebilir */
-    }
-     #restart-btn {
-        padding: 10px 20px;
-        font-size: 1em;
-    }
+    #header h1 { font-size: 1.3em; margin: 0 8px; }
+    #header img { height: 28px; }
+    #ui-container { font-size: 1em; margin-bottom: 10px; }
+    #mobile-controls { display: flex; }
+    .overlay-content { padding: 15px 20px; max-width: 90%; }
+    .overlay-content h2 { font-size: 1.5em; margin-bottom: 15px;}
+    #startScreen .instructions { font-size: 0.9em; }
+    #startScreen #rewardList { font-size: 0.9em;}
+    #start-btn { font-size: 1.1em; padding: 10px 25px;}
+    #finalScore { font-size: 1.4em; }
+    #rewardMessage { font-size: 1.1em; }
+    #emailInstruction { font-size: 0.85em !important; }
+    #restart-btn { font-size: 1em; padding: 10px 20px; }
+}
+
+@media (max-width: 480px) {
+    #header h1 { font-size: 1.1em; }
+    #header img { height: 25px; }
+    #ui-container { font-size: 0.9em; }
+    #mobile-controls button { font-size: 1em; padding: 10px 5px;}
+    .overlay-content { padding: 15px; }
+    .overlay-content h2 { font-size: 1.3em; }
+    #finalScore { font-size: 1.2em; }
+    #rewardMessage { font-size: 1em; }
+    #emailInstruction { font-size: 0.8em !important; }
+    #start-btn, #restart-btn { font-size: 1em; padding: 10px 18px;}
 }
