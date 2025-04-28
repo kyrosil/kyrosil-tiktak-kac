@@ -1,1 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kyrosil Tiktak Kaçış - Başlangıç</title>
+    <link rel="stylesheet" href="style.css"> <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Bu sayfaya özel ek stiller */
+        body {
+            align-items: flex-start; /* İçeriği yukarı yasla */
+            padding-top: 30px;
+        }
+        #start-page-container {
+            background-color: #ffffff;
+            padding: 25px 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            max-width: 650px; /* Başlangıç ekranı daha geniş olabilir */
+            width: 90%;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        #start-page-container h2 {
+             margin-top: 0;
+             color: #e63946;
+             font-size: 1.8em;
+             margin-bottom: 20px;
+        }
+         .instructions {
+            font-size: 0.95em;
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: left;
+            line-height: 1.6;
+        }
+        .rewards-info {
+            margin-top: 25px;
+            text-align: left;
+            font-size: 0.9em;
+        }
+        .rewards-info strong {
+            color: #333;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1em; /* Biraz büyüt */
+        }
+        #rewardListStart { /* ID'yi değiştirdik */
+            list-style: none;
+            padding-left: 10px;
+            margin: 0;
+            color: #555;
+        }
+        #rewardListStart li {
+            margin-bottom: 6px;
+            padding-left: 20px;
+            position: relative;
+        }
+         #rewardListStart li::before {
+            content: '🏆';
+            position: absolute;
+            left: 0;
+            top: 1px;
+            font-size: 0.9em;
+        }
+        /* Başlatma Butonu (Link olarak) */
+        #start-link-btn {
+            display: inline-block; /* Buton gibi dursun */
+            padding: 14px 35px; /* Biraz daha büyük */
+            font-size: 1.3em;
+            font-weight: bold;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 30px;
+            text-decoration: none; /* Link alt çizgisini kaldır */
+            transition: background-color 0.2s ease;
+        }
+         #start-link-btn:hover {
+            background-color: #45a049;
+        }
+         .logo-container img {
+             max-height: 50px;
+             margin: 0 15px 20px 15px;
+         }
+         @media (max-width: 600px) {
+            #start-page-container { padding: 20px; max-width: 95%; }
+            #start-page-container h2 { font-size: 1.5em; }
+            .instructions, .rewards-info, #rewardListStart li { font-size: 0.9em;}
+            #start-link-btn { font-size: 1.1em; padding: 12px 30px;}
+            .logo-container img { max-height: 40px; margin-bottom: 15px;}
+         }
 
+    </style>
+</head>
+<body>
+    <div id="start-page-container">
+         <div class="logo-container">
+              <img src="./indir (1).png" alt="Tiktak Logo" title="Tiktak">
+              <img src="./indir.png" alt="Kyrosil Logo" title="Kyrosil" style="opacity: 0.9;">
+         </div>
+         <h2>Kyrosil Tiktak Kaçış'a Hoş Geldiniz!</h2>
+         <p class="instructions">
+            <strong>Nasıl Oynanır:</strong> Klavye (Ok tuşları veya A/D) veya mobil butonları kullanarak Tiktak arabanızı 3 şeritli yolda sürün. Engellere (🚗🚙🚕) çarpmadan ilerleyin. Nadiren çıkan Kyrosil logolarını (✨) toplayarak ekstra puan kazanın! 3 can hakkınız var. Unutmayın, oyun gittikçe hızlanacak!
+        </p>
+        <p class="instructions">
+            <strong>Puanlama:</strong> Çarpmadan geçilen her engel +1 Puan, toplanan her Kyrosil logosu +5 Puan.
+        </p>
+        <div class="rewards-info">
+            <strong>Ödüller:</strong>
+            <ul id="rewardListStart">
+                <li><strong style="color:#e63946;">50 Puan:</strong> 100 TL İndirim</li>
+                <li><strong style="color:#e63946;">100 Puan:</strong> 200 TL İndirim</li>
+                <li><strong style="color:#e63946;">200 Puan:</strong> 500 TL İndirim</li>
+                <li><strong style="color:#e63946;">300 Puan:</strong> 1 Günlük Ücretsiz Kiralama + 100KM (Easy Grp)</li>
+                <li><strong style="color:#e63946;">400 Puan:</strong> 2 Günlük Ücretsiz Kiralama + 200KM (Easy Grp)</li>
+                <li><strong style="color:#e63946;">500 Puan:</strong> 🏆 EPİK! 5 Günlük Ücretsiz Kiralama + 500 KM (Easy Grp)</li>
+            </ul>
+        </div>
+        <a href="index.html" id="start-link-btn">Oyuna Başla!</a>
+         <p style="font-size: 0.7em; color: #aaa; margin-top: 20px;">Günlük 3 oyun hakkınız bulunmaktadır.</p>
+    </div>
+
+</body>
+</html>
