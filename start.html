@@ -9,75 +9,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         /* Bu sayfaya özel ek stiller */
-        body {
-            align-items: flex-start;
-            padding-top: 20px;
-            padding-bottom: 20px;
-            background-color: #eef1f5;
-            font-family: 'Poppins', sans-serif;
-        }
-        #start-page-container {
-            background-color: #ffffff;
-            padding: 25px 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            max-width: 650px;
-            width: 90%;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-            text-align: center;
-            margin: 20px auto;
-        }
-        #start-page-container h2 {
-             margin-top: 0; color: #e63946; font-size: 1.8em; margin-bottom: 20px; font-weight: 700;
-        }
-         .instructions { font-size: 0.95em; color: #495057; margin-bottom: 15px; text-align: left; line-height: 1.6; }
+        body { align-items: flex-start; padding-top: 20px; padding-bottom: 20px; background-color: #eef1f5; font-family: 'Poppins', sans-serif; }
+        #start-page-container { background-color: #ffffff; padding: 25px 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); max-width: 650px; width: 90%; box-sizing: border-box; border: 1px solid #ddd; text-align: center; margin: 20px auto; }
+        #start-page-container h2 { margin-top: 0; color: #e63946; font-size: 1.8em; margin-bottom: 20px; font-weight: 700; }
+        .instructions { font-size: 0.95em; color: #495057; margin-bottom: 15px; text-align: left; line-height: 1.6; }
         .rewards-info { margin-top: 25px; text-align: left; font-size: 0.9em; }
         .rewards-info strong { color: #333; display: block; margin-bottom: 10px; font-size: 1.1em; }
         #rewardListStart { list-style: none; padding-left: 10px; margin: 0; color: #555; }
         #rewardListStart li { margin-bottom: 6px; padding-left: 20px; position: relative; }
-         #rewardListStart li::before { content: '🏆'; position: absolute; left: 0; top: 1px; font-size: 0.9em; }
-
-        /* === YouTube Video Embed Styles === */
-        .video-wrapper {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 en boy oranı */
-            height: 0;
-            overflow: hidden;
-            max-width: 100%;
-            background: #f0f0f0; /* Video yüklenirken hafif arka plan */
-            margin: 25px 0; /* Üstten ve alttan boşluk */
-            border-radius: 8px; /* Kenarları hafif yuvarlat */
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Hafif gölge */
-        }
-        .video-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0; /* YouTube çerçevesini kaldır */
-        }
-        /* ================================= */
-
-        #start-link-btn {
-            display: inline-block; padding: 14px 35px; font-size: 1.3em; font-weight: bold;
-            background-color: #4CAF50; color: white; border: none; border-radius: 8px;
-            cursor: pointer; margin-top: 15px; text-decoration: none;
-            transition: background-color 0.2s ease;
-        }
-         #start-link-btn:hover { background-color: #45a049; }
-         .logo-container img { max-height: 50px; margin: 0 15px 20px 15px; vertical-align: middle;}
-
-         @media (max-width: 600px) {
-            body { padding-top: 10px; padding-bottom: 10px; }
-            #start-page-container { padding: 20px; max-width: 95%; }
-            #start-page-container h2 { font-size: 1.5em; }
-            .instructions, .rewards-info, #rewardListStart li { font-size: 0.9em;}
-            .video-wrapper { margin: 20px 0; }
-            #start-link-btn { font-size: 1.1em; padding: 12px 30px; margin-top: 20px;}
-            .logo-container img { max-height: 40px; margin-bottom: 15px;}
-         }
+        #rewardListStart li::before { content: '🏆'; position: absolute; left: 0; top: 1px; font-size: 0.9em; }
+        /* Telefon Giriş Alanı Stilleri */
+        .input-group { margin: 25px 0 15px 0; text-align: left; }
+        label[for="phone-input-start"] { display: block; margin-bottom: 6px; font-weight: 600; color: #333; font-size: 0.9em; }
+        input[type="tel"] { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1em; box-sizing: border-box; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        input[type="tel"]:focus { border-color: #007bff; box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); outline: none; }
+        .error-message { display: none; color: #e63946; font-size: 0.85em; margin-top: 5px; }
+        /* Başlatma Butonu */
+        #start-game-button { display: inline-block; padding: 14px 35px; font-size: 1.3em; font-weight: bold; background-color: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; text-decoration: none; transition: background-color 0.2s ease; }
+        #start-game-button:hover { background-color: #45a049; }
+        .logo-container img { max-height: 50px; margin: 0 15px 20px 15px; vertical-align: middle;}
+        @media (max-width: 600px) { body { padding-top: 10px; padding-bottom: 10px; } #start-page-container { padding: 20px; max-width: 95%; } #start-page-container h2 { font-size: 1.5em; } .instructions, .rewards-info, #rewardListStart li { font-size: 0.9em;} #start-game-button { font-size: 1.1em; padding: 12px 30px; margin-top: 20px;} .logo-container img { max-height: 40px; margin-bottom: 15px;} }
     </style>
 </head>
 <body>
@@ -87,29 +38,48 @@
               <img src="./indir.png" alt="Kyrosil Logo" title="Kyrosil" style="opacity: 0.9;">
          </div>
          <h2>Kyrosil Tiktak Kaçış'a Hoş Geldiniz!</h2>
+         <p class="instructions"><strong>Nasıl Oynanır:</strong> Klavye (Ok tuşları veya A/D) veya mobil butonları kullanarak Tiktak arabanızı 3 şeritli yolda sürün. Engellere (🚗🚙🚕) çarpmadan ilerleyin. Nadiren çıkan Kyrosil logolarını (✨) toplayarak ekstra puan kazanın! 3 can hakkınız var. Unutmayın, oyun gittikçe hızlanacak!</p>
+         <p class="instructions"><strong>Puanlama:</strong> Çarpmadan geçilen her engel +1 Puan, toplanan her Kyrosil logosu +5 Puan.</p>
+         <div class="rewards-info"><strong>Ödüller:</strong><ul id="rewardListStart"><li><strong style="color:#e63946;">50 Puan:</strong> 100 TL İndirim</li><li><strong style="color:#e63946;">100 Puan:</strong> 200 TL İndirim</li><li><strong style="color:#e63946;">200 Puan:</strong> 500 TL İndirim</li><li><strong style="color:#e63946;">300 Puan:</strong> 1 Günlük Ücretsiz Kiralama + 100KM (Easy Grp)</li><li><strong style="color:#e63946;">400 Puan:</strong> 2 Günlük Ücretsiz Kiralama + 200KM (Easy Grp)</li><li><strong style="color:#e63946;">500 Puan:</strong> 🏆 EPİK! 5 Günlük Ücretsiz Kiralama + 500 KM (Easy Grp)</li></ul></div>
 
-         <div class="video-wrapper">
-             <iframe width="560" height="315" src="https://www.youtube.com/embed/cY0Qr1xC4c8?si=duJht9vdu5UtmMiF" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+         <div class="input-group">
+             <label for="phone-input-start">Tiktak'a Kayıtlı Telefon Numaranız:</label>
+             <input type="tel" id="phone-input-start" name="phone" placeholder="5xxxxxxxxx" required pattern="\d{10}">
+             <small id="phone-error-start" class="error-message">Lütfen 10 haneli telefon numaranızı giriniz.</small>
          </div>
-         <p class="instructions">
-            <strong>Nasıl Oynanır:</strong> Klavye (Ok tuşları veya A/D) veya mobil butonları kullanarak Tiktak arabanızı 3 şeritli yolda sürün. Engellere (🚗🚙🚕) çarpmadan ilerleyin. Nadiren çıkan Kyrosil logolarını (✨) toplayarak ekstra puan kazanın! 3 can hakkınız var. Unutmayın, oyun gittikçe hızlanacak!
-        </p>
-        <p class="instructions">
-            <strong>Puanlama:</strong> Çarpmadan geçilen her engel +1 Puan, toplanan her Kyrosil logosu +5 Puan.
-        </p>
-        <div class="rewards-info">
-            <strong>Ödüller:</strong>
-            <ul id="rewardListStart">
-                 <li><strong style="color:#e63946;">50 Puan:</strong> 100 TL İndirim</li>
-                 <li><strong style="color:#e63946;">100 Puan:</strong> 200 TL İndirim</li>
-                 <li><strong style="color:#e63946;">200 Puan:</strong> 500 TL İndirim</li>
-                 <li><strong style="color:#e63946;">300 Puan:</strong> 1 Günlük Ücretsiz Kiralama + 100KM (Easy Grp)</li>
-                 <li><strong style="color:#e63946;">400 Puan:</strong> 2 Günlük Ücretsiz Kiralama + 200KM (Easy Grp)</li>
-                 <li><strong style="color:#e63946;">500 Puan:</strong> 🏆 EPİK! 5 Günlük Ücretsiz Kiralama + 500 KM (Easy Grp)</li>
-            </ul>
-        </div>
-        <a href="index.html" id="start-link-btn">Oyuna Başla!</a>
+         <button id="start-game-button">Oyuna Başla!</button>
          <p style="font-size: 0.7em; color: #aaa; margin-top: 20px;">Günlük 3 oyun hakkınız bulunmaktadır.</p>
     </div>
+
+    <script>
+        // Bu script SADECE start.html içindir
+        const startButton = document.getElementById('start-game-button');
+        const phoneInput = document.getElementById('phone-input-start');
+        const phoneError = document.getElementById('phone-error-start');
+
+        startButton.addEventListener('click', () => {
+            const phoneNumber = phoneInput.value.trim();
+            // Basit 10 haneli numara kontrolü
+            if (/^\d{10}$/.test(phoneNumber)) {
+                phoneError.style.display = 'none';
+                // Numarayı Local Storage'a kaydet
+                try {
+                    localStorage.setItem('userPhoneNumberForGame', phoneNumber);
+                    console.log('Telefon numarası kaydedildi:', phoneNumber);
+                     // index.html'e yönlendir
+                    window.location.href = 'index.html';
+                } catch (e) {
+                    console.error("Local Storage'a kaydedilemedi:", e);
+                    // Hata durumunda da oyuna geçmeyi deneyebiliriz ama numara kaydedilmez
+                     alert("Telefon numarası kaydedilemedi, ancak oyuna devam ediliyor.");
+                    window.location.href = 'index.html';
+                }
+            } else {
+                // Hata mesajı göster
+                phoneError.style.display = 'block';
+                phoneInput.focus(); // Input'a odaklan
+            }
+        });
+    </script>
 </body>
 </html>
