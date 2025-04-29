@@ -1,5 +1,5 @@
 /* === Genel Stiller ve Font === */
-body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #eef1f5; font-family: 'Poppins', sans-serif; overflow: hidden; }
+body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #eef1f5; font-family: 'Poppins', sans-serif; /* overflow: hidden; <-- BU SATIR SİLİNDİ! */ }
 #game-container { position: relative; display: flex; flex-direction: column; align-items: center; background-color: #ffffff; padding: 20px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); max-width: 550px; width: 95%; box-sizing: border-box; border: 1px solid #ddd; margin: auto; }
 /* === Başlık ve Logolar === */
 #header { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
